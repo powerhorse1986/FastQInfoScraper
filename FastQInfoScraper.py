@@ -1,7 +1,9 @@
+import requests
 import selenium.webdriver as webdriver
 from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
 
-def get_results(search_string):
+def get_links(search_string):
     """Gets the links to the databases based on the search_string
 
     Parameters
@@ -41,13 +43,46 @@ def get_results(search_string):
         # An entry in fact is a <tr> in a table, and since a hyperlink locates in an
         # <a> tag, we have to fetch the <a> WebElement using find_element by tag name
         cell = entry.find_element(By.TAG_NAME, "a")
-        print(cell.text)
+
         # A cell is also a WebElement. It has an attribute "href". So, we can extract
         # out the link using get_attribute
         href = cell.get_attribute("href")
-        print(href)
+
         results[cell.text] = href
     browser.close()
     return results
 
-print(get_results("cancer cell free methylation"))
+def gsa_iteration(gsa_link):
+    """Iterates the pages of GSA (Gene Sequence Archive) database and extract the experiment
+    information as well as the SRA accession numbers
+
+    Parameters
+    ----------
+        gsa_link : str
+            The link to the page for GSA searching results
+
+    Returns
+    -------
+        dictionary
+            a dictionary stores the experimental accession numbers and the SRA accession numbers.
+            with the keys are the experimental accession numbers, the values are lists contain
+            SRA accession numbers. one experimental accession numbers could refer to multiple SRA
+            accession numbers, but one SRA accession number could only refer to one experimental
+            accession number.
+    """
+    # We use the Google Chrome as our driver
+    browser = webdriver.Chrome()
+    browser.get(gsa_link)
+
+    # Extract all the <h4> elements. Because the links to the experiments are put in <h4> elements
+    # as <h4><a href="link">text</a></h4>
+    elements = browser.find_elements(By.XPATH, "//*[@class='ui segment']/h4")
+
+    for ele in elements:
+        info = ele.find_element(By.TAG_NAME, "a")
+        print(info.text)
+        href = info.get_attribute("href")
+        print(href)
+
+results = get_links("cancer cell free methylation")
+gsa_iteration(results["GSA"])
