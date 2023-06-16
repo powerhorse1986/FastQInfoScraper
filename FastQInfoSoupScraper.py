@@ -1,10 +1,11 @@
+#! /usr/bin/python
 """FastQInfoSoupScraper
 
 A script for scraping the SRA information from the search engine of ngdc.cncb.ac.cn.
 To run this script, the python packages requests and bs4 are required.
 """
 import sys
-
+import csv
 import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
@@ -127,7 +128,7 @@ def extract_sra_info(curr_url):
             if text == "Run":
                 sra_number = row.find("a").get_text()
 
-    if is_hs and hiseq:
+    if is_hs:
         print(project)
         print(sra_number)
         try:
@@ -137,13 +138,19 @@ def extract_sra_info(curr_url):
             #print(sra_info)
             sys.exit(1)
 
+# Extracts out urls of all the pages
 extract_all_urls(find_page_numbers(start_url))
+
+# Extracts the urls listed in a page
 for url in all_urls:
     urls_in_page(url)
 
-print(len(urls_in_one_page))
-
+# Extracts the sra information
 for url in urls_in_one_page:
     extract_sra_info(url)
 
-print(sra_info)
+# Writes the values, the lists, into files, which named after the keys
+for key, value in sra_info.items():
+    with open(f"{key}.csv", "w") as file:
+        wr = csv.writer(file, delimiter = ",")
+        wr.writerow(value)
