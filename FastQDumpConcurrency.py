@@ -6,7 +6,6 @@ This script aims to download fastq files concurrently. The SRA accession numbers
 csv files. The names of the csv files are the BioExperiment IDs.
 """
 import os
-import subprocess
 from multiprocessing import Pool
 
 # Path to the directory in which the fastq files are stored
@@ -39,19 +38,25 @@ def dump_fastq(sra_number):
     # mkdir_cmd = f"mkdir {sra_path}"
     # os.system(mkdir_cmd)
     prefetch_cmd = f"prefetch {sra_number} -O {DATA_PATH}"
-    subprocess.call(prefetch_cmd)
-    subprocess.call(f"echo {sra_number} prefetched")
+    os.system(prefetch_cmd)
+    os.system(f"echo {sra_number} prefetched")
 
     sra_path = os.path.join(DATA_PATH, sra_number)
     fasterq_dump_cmd = f"fasterq-dump {sra_path} -O {sra_path}"
-    subprocess.call(fasterq_dump_cmd)
+    os.system(fasterq_dump_cmd)
 
     fastq_path = os.path.join(sra_path, "*.fastq")
     gzip_cmd = f"gzip {fastq_path}"
-    subprocess.call(gzip_cmd)
+    os.system(gzip_cmd)
+
+    # Remove the SRA file
+    SRA_path = os.path.join(DATA_PATH, sra_number, f"{sra_number}.sra")
+    SRA_remove_cmd = f"rm {SRA_path}"
+    os.system(SRA_remove_cmd)
 
 # sra_list = read_file("PRJEB40875.csv")
-sra_list = read_file("PRJEB28329.csv")
+# sra_list = read_file("PRJEB28329.csv")
+sra_list = read_file("PRJNA494975.csv")
 print(f"{len(sra_list)} files are going to dump.")
 
 with Pool(3) as pool:
