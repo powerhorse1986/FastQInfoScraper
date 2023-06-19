@@ -36,16 +36,22 @@ def dump_fastq(sra_number):
     sra_number : str
         A string refers to a SRA accession number.
     """
-    sra_path = os.path.join(DATA_PATH, sra_number)
-    mkdir_cmd = f"mkdir {sra_path}"
-    os.system(mkdir_cmd)
-    prefetch_cmd = f"prefetch {sra_number} -O {sra_path}"
+    # mkdir_cmd = f"mkdir {sra_path}"
+    # os.system(mkdir_cmd)
+    prefetch_cmd = f"prefetch {sra_number} -O {DATA_PATH}"
     os.system(prefetch_cmd)
-    fasterq_dump_cmd = f"fasterq-dump {sra_number}"
+    os.system(f"echo {sra_number} prefetched")
+
+    sra_path = os.path.join(DATA_PATH, sra_number)
+    fasterq_dump_cmd = f"fasterq-dump {sra_path} -O {sra_path}"
     os.system(fasterq_dump_cmd)
+
+    fastq_path = os.path.join(sra_path, "*.fastq")
+    gzip_cmd = f"gzip {fastq_path}"
+    os.system(gzip_cmd)
 
 sra_list = read_file("PRJEB40875.csv")
 print(f"{len(sra_list)} files are going to dump.")
 
-with Pool(5) as pool:
+with Pool(3) as pool:
     pool.map(dump_fastq, sra_list)

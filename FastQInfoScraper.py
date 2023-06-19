@@ -1,7 +1,5 @@
-import requests
 import selenium.webdriver as webdriver
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
 
 def get_links(search_string):
     """Gets the links to the databases based on the search_string
